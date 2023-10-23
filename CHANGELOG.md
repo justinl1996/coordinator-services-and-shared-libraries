@@ -2,6 +2,19 @@
 
 ## [1.4.0](https://github.com/privacysandbox/coordinator-services-and-shared-libraries/compare/v1.3.0-RC...v1.4.0-rc02) (2023-10-20)
 
+ * **Important note**
+
+   To enable batching of metrics, the following line needs to be added to the auto.tfvars of the distributedpbs_application in the application_environment_variables variable map.
+    ```
+    application_environment_variables = {
+      google_scp_pbs_metrics_batch_push_enabled = "true"
+    }
+    ```
+   To be compatible to the existing Aggregation service versions, the following line needs to be added to the auto.tfvars of mpkhs_primary and mpkhs_secondary
+    ```
+    get_encryption_key_lambda_ps_client_shim_enabled = true
+    ```
+
   * Fixed sharded summary report multi-threaded upload by using S3 TransferManager for aws
   * Changed key-split encryption with public key as associated data
   * Fixed missing permission for key storage to re-encrypt key-split
