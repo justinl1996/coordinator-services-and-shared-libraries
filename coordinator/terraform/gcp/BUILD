@@ -18,6 +18,30 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 package(default_visibility = ["//visibility:public"])
 
 pkg_files(
+    name = "encryption_key_service_jar",
+    srcs = [
+        "//java/com/google/scp/coordinator/keymanagement/keyhosting/service/gcp:EncryptionKeyServiceHttpCloudFunctionDeploy",
+    ],
+    prefix = "jars",
+)
+
+pkg_files(
+    name = "public_key_service_jar",
+    srcs = [
+        "//java/com/google/scp/coordinator/keymanagement/keyhosting/service/gcp:PublicKeyServiceHttpCloudFunctionDeploy",
+    ],
+    prefix = "jars",
+)
+
+pkg_files(
+    name = "key_storage_service_jar",
+    srcs = [
+        "//java/com/google/scp/coordinator/keymanagement/keyhosting/service/gcp:KeyStorageServiceHttpCloudFunctionDeploy",
+    ],
+    prefix = "jars",
+)
+
+pkg_files(
     name = "multiparty_dist_jars",
     srcs = [
         "//java/com/google/scp/coordinator/keymanagement/keyhosting/service/gcp:EncryptionKeyServiceHttpCloudFunctionDeploy",
