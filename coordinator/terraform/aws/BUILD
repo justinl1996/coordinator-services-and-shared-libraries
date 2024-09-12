@@ -18,6 +18,31 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_zip")
 package(default_visibility = ["//visibility:public"])
 
 pkg_files(
+    name = "encryption_key_service_jar",
+    srcs = [
+        "//java/com/google/scp/coordinator/keymanagement/keyhosting/service/aws:EncryptionKeyServiceLambdaDeploy",
+    ],
+    prefix = "jars",
+)
+
+pkg_files(
+    name = "public_key_service_jar",
+    srcs = [
+        "//java/com/google/scp/coordinator/keymanagement/keyhosting/service/aws:PublicKeyApiGatewayHandlerDeploy",
+    ],
+    prefix = "jars",
+)
+
+pkg_files(
+    name = "key_storage_service_jar",
+    srcs = [
+        "//java/com/google/scp/coordinator/keymanagement/keystorage/service/aws:KeyStorageServiceLambdaDeploy",
+    ],
+    prefix = "jars",
+)
+
+
+pkg_files(
     name = "multiparty_dist_files",
     srcs = [
         "//cc/pbs/deploy/pbs_server/build_defs:reproducible_pbs_container_aws",
