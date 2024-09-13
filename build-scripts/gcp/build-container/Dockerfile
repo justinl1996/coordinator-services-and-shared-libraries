@@ -31,7 +31,8 @@ RUN \
         python3-pkg-resources \
         software-properties-common \
         tree \
-        unzip
+        unzip \
+        jq
 
 RUN \
     # Install OpenJDK
