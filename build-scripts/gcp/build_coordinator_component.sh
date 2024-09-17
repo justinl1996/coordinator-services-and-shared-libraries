@@ -58,6 +58,10 @@ case $COMPONENT in
     deploy_key_storage_jar
     ;;
 
+  pbs_server)
+    deploy_pbs_server
+    ;;
+
   *)
     echo "Unknown Component"
     ;;
