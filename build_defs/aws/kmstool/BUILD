@@ -34,6 +34,11 @@ genrule(
     tar -xf $$SOURCE_TAR_FILE -C $${SOURCE_TAR_FILE%/*}
     ROOT_DIR=$${SOURCE_TAR_FILE%/*}/aws_nitro_enclaves_sdk_c
     DOCKER_FILE=$$ROOT_DIR/containers/Dockerfile.al2
+    pwd
+    whoami
+    hostname
+    export DOCKER_CONFIG=$$ROOT_DIR/.docker
+    env
     docker build --target kmstool-enclave-cli -t kmstool-enclave-cli -f $$DOCKER_FILE $$ROOT_DIR
     CONTAINER_ID=$$(docker create kmstool-enclave-cli)
     docker cp $$CONTAINER_ID:/kmstool_enclave_cli $(location :kmstool_enclave_cli)
