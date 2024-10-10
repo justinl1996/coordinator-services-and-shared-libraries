@@ -23,6 +23,10 @@ IMAGE_TAG=$3
 KEY_GENERATION_LOG=$(pwd)/buildlog.txt
 cp cc/tools/build/build_container_params.bzl.prebuilt cc/tools/build/build_container_params.bzl
 
+pwd
+whoami
+hostname
+
 bazel run //coordinator/keygeneration/gcp:key_generation_app_mp_gcp_image_prod \
 --sandbox_writable_path=$HOME/.docker \
 -- -dst "${IMAGE_REPO_PATH}/${IMAGE_NAME}:${IMAGE_TAG}" \

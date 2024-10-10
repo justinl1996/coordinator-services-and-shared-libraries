@@ -23,7 +23,13 @@ KEY_GENERATION_AMI="aggregation-service-keygeneration-enclave-prod-${COORDINATOR
 
 cp cc/tools/build/build_container_params.bzl.prebuilt cc/tools/build/build_container_params.bzl
 
+pwd
+whoami
+hostname
+
 bazel run //coordinator/keygeneration/aws:prod_keygen_ami \
+	--spawn_strategy=local \
 	--sandbox_writable_path=$HOME/.docker \
 	--//coordinator/keygeneration/aws:keygeneration_ami_name="${KEY_GENERATION_AMI}" \
 	--//coordinator/keygeneration/aws:keygeneration_ami_region="${AWS_DEFAULT_REGION}" | tee "${KEY_GENERATION_LOG}"
+	
