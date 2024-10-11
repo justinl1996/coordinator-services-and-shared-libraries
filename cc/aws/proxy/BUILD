@@ -84,16 +84,23 @@ genrule(
     ],
     cmd = """
     export OUTPUT_DIR=`mktemp -d -t PROXY_BUILD_OUTPUTS_XXXXX`
+    bazel --version
+    ls -l `realpath $(location //:source_code_tar)`
+    tar xf `realpath $(location //:source_code_tar)` -C `basename $(location //:source_code_tar)`
     docker load < $(location :build_container.tar)
     docker run --rm \
-      -v `realpath $(location //:source_code_tar)`:/source_code.tar \
+      -v `basename $(location //:source_code_tar)`:/ \
       -v `realpath $(location @bazelisk//file:bazelisk)`:/bin/bazel \
       -v `realpath "$${OUTPUT_DIR}"`:/output \
       bazel/cc/aws/proxy:build_container \
       bash -c '
         set -eux
         yum install glibc-devel-2.26-64.amzn2.0.2 glibc-headers-2.26-64.amzn2.0.2 gcc-7.3.1-17.amzn2 gcc-c++-7.3.1-17.amzn2 tar git -y > /dev/null
-        tar xf /source_code.tar -C /
+        #ls -l /source_code.tar
+        #find /source_code.tar
+        ls -l /
+        #tar xf /source_code.tar -C /
+        #tar xf $(location //:source_code_tar) -C /
         cd /scp
         # Remove clang flags
         sed -i '/fbracket-depth=512/d' .bazelrc
