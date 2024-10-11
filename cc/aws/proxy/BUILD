@@ -13,6 +13,8 @@
 # limitations under the License.
 
 load("@com_github_google_rpmpack//:def.bzl", "pkg_tar2rpm")
+load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs")
+load("@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl", "install_pkgs")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
@@ -61,9 +63,18 @@ pkg_tar(
     ],
 )
 
+pkg_tar(
+    name = "bazel_tar",
+    srcs = [
+        "@bazelisk//file:bazelisk"
+    ],
+)
+
 container_image(
     name = "build_container",
     base = "@amazonlinux_2//image",
+    tars = ["//:source_code_tar", ":bazel_tar"],
+    directory = "/"
 )
 
 # Mounts the source code into an AmazonLinux2 docker container and performs a
@@ -72,9 +83,7 @@ container_image(
 genrule(
     name = "reproducible_proxy_outputs",
     srcs = [
-        "//:source_code_tar",
         ":build_container.tar",
-        "@bazelisk//file:bazelisk",
     ],
     outs = [
         "libproxy_preload.so",
@@ -84,23 +93,16 @@ genrule(
     ],
     cmd = """
     export OUTPUT_DIR=`mktemp -d -t PROXY_BUILD_OUTPUTS_XXXXX`
-    bazel --version
-    ls -l `realpath $(location //:source_code_tar)`
-    tar xf `realpath $(location //:source_code_tar)` -C `dirname $(realpath $(location //:source_code_tar))`
     docker load < $(location :build_container.tar)
+    VOLUME=`docker volume create`
     docker run --rm \
-      -v `basename $(location //:source_code_tar)`:/ \
-      -v `realpath $(location @bazelisk//file:bazelisk)`:/bin/bazel \
-      -v `realpath "$${OUTPUT_DIR}"`:/output \
+      -v $${VOLUME}:/output \
       bazel/cc/aws/proxy:build_container \
       bash -c '
         set -eux
         yum install glibc-devel-2.26-64.amzn2.0.2 glibc-headers-2.26-64.amzn2.0.2 gcc-7.3.1-17.amzn2 gcc-c++-7.3.1-17.amzn2 tar git -y > /dev/null
-        #ls -l /source_code.tar
-        #find /source_code.tar
-        ls -l /
         #tar xf /source_code.tar -C /
-        #tar xf $(location //:source_code_tar) -C /
+        cp /bazelisk /bin/bazel
         cd /scp
         # Remove clang flags
         sed -i '/fbracket-depth=512/d' .bazelrc
@@ -111,14 +113,32 @@ genrule(
           //cc/aws/proxy/src:socket_vendor
         cp $$(bazel info bazel-bin)/cc/aws/proxy/src/{libproxy_preload.so,proxify,proxy,socket_vendor} /output
       '
-    cp "$${OUTPUT_DIR}/libproxy_preload.so" $(location libproxy_preload.so)
-    cp "$${OUTPUT_DIR}/proxify" $(location proxify)
-    cp "$${OUTPUT_DIR}/proxy" $(location proxy)
-    cp "$${OUTPUT_DIR}/socket_vendor" $(location socket_vendor)
-    rm -r "$${OUTPUT_DIR}"
+    CONTAINER_ID=`docker run --rm -d \
+      -v $${VOLUME}:/output \
+      bazel/cc/aws/proxy:build_container \
+      bash -c '
+        while true; do sleep 1; done
+      '
+    `
+    docker cp "$${CONTAINER_ID}:/output/libproxy_preload.so" $(location libproxy_preload.so)
+    docker cp "$${CONTAINER_ID}:/output/proxify" $(location proxify)
+    docker cp "$${CONTAINER_ID}:/output/proxy" $(location proxy)
+    docker cp "$${CONTAINER_ID}:/output/socket_vendor" $(location socket_vendor)
+
+    #cp "$${OUTPUT_DIR}/libproxy_preload.so" $(location libproxy_preload.so)
+    #cp "$${OUTPUT_DIR}/proxify" $(location proxify)
+    #cp "$${OUTPUT_DIR}/proxy" $(location proxy)
+    #cp "$${OUTPUT_DIR}/socket_vendor" $(location socket_vendor)
+    docker rm --force $${CONTAINER_ID}
+    docker volume rm $${VOLUME}
+    
+    #rm -r "$${OUTPUT_DIR}"
     """,
     tags = ["manual"],
 )
+
+
+
 
 pkg_tar2rpm(
     name = "vsockproxy_rpm",

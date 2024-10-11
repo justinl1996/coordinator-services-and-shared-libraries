@@ -32,7 +32,8 @@ RUN \
         curl \
         gnupg \
         tree \
-        npm
+        npm \
+        jq
 
 RUN \
     # Install OpenJDK
@@ -60,6 +61,11 @@ RUN \
     apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 24.0 | head -1 | awk '{print $3}') \
     docker-ce-cli && apt-get -y autoclean && apt-get -y autoremove
 
+RUN \
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.asc] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | tee /usr/share/keyrings/cloud.google.asc && \
+apt-get update && apt-get -y install google-cloud-cli && \
+apt-get -y autoclean && apt-get -y autoremove
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
