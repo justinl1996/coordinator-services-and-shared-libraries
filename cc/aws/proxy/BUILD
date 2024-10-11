@@ -86,7 +86,7 @@ genrule(
     export OUTPUT_DIR=`mktemp -d -t PROXY_BUILD_OUTPUTS_XXXXX`
     bazel --version
     ls -l `realpath $(location //:source_code_tar)`
-    tar xf `realpath $(location //:source_code_tar)` -C `basename $(location //:source_code_tar)`
+    tar xf `realpath $(location //:source_code_tar)` -C `dirname $(realpath $(location //:source_code_tar))`
     docker load < $(location :build_container.tar)
     docker run --rm \
       -v `basename $(location //:source_code_tar)`:/ \
